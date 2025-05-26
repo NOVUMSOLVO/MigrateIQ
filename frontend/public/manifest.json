@@ -1,0 +1,57 @@
+{
+  "short_name": "MigrateIQ",
+  "name": "MigrateIQ - AI-powered data migration system",
+  "description": "Enterprise-grade data migration platform with AI-powered schema recognition and automated transformation",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1976d2",
+  "background_color": "#ffffff",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View migration dashboard",
+      "url": "/",
+      "icons": [{"src": "logo192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "New Project",
+      "short_name": "New Project",
+      "description": "Create new migration project",
+      "url": "/projects/new",
+      "icons": [{"src": "logo192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Data Sources",
+      "short_name": "Data Sources",
+      "description": "Manage data sources",
+      "url": "/data-sources",
+      "icons": [{"src": "logo192.png", "sizes": "192x192"}]
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+name: Code Scanning
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 0 * * 1'  # Run weekly on Monday at midnight
+
+jobs:
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python', 'javascript' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  bandit-scan:
+    name: Bandit Security Scan (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install bandit
+        run: pip install bandit
+        
+      - name: Run bandit
+        run: |
+          cd backend
+          bandit -r . -x "./tests/,./venv/" -f json -o bandit-results.json
+        continue-on-error: true
+        
+      - name: Upload bandit scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: backend/bandit-results.json
+        if: always()
+
+  eslint-scan:
+    name: ESLint Security Scan (JavaScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+          
+      - name: Install eslint-plugin-security
+        run: |
+          cd frontend
+          npm install --save-dev eslint-plugin-security
+          
+      - name: Run ESLint with security plugin
+        run: |
+          cd frontend
+          npx eslint . -c .eslintrc.js --ext .js,.jsx,.ts,.tsx --no-eslintrc --plugin security --rule 'security/detect-unsafe-regex: 2' --rule 'security/detect-buffer-noassert: 2' --rule 'security/detect-child-process: 2' --rule 'security/detect-disable-mustache-escape: 2' --rule 'security/detect-eval-with-expression: 2' --rule 'security/detect-no-csrf-before-method-override: 2' --rule 'security/detect-non-literal-fs-filename: 2' --rule 'security/detect-non-literal-regexp: 2' --rule 'security/detect-non-literal-require: 2' --rule 'security/detect-object-injection: 2' --rule 'security/detect-possible-timing-attacks: 2' --rule 'security/detect-pseudoRandomBytes: 2' --format json > eslint-results.json
+        continue-on-error: true
+
+  secret-scanning:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+  proprietary-code-protection:
+    name: Proprietary Code Protection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Check for sensitive patterns
+        run: |
+          # Define patterns that might indicate exposure of proprietary algorithms
+          PATTERNS=(
+            "proprietary algorithm"
+            "confidential business logic"
+            "NOVUMSOLVO secret"
+            "internal use only"
+            "do not distribute"
+          )
+          
+          # Directories to exclude from scanning
+          EXCLUDE_DIRS=(
+            ".git"
+            "node_modules"
+            "venv"
+            "__pycache__"
+            "*.egg-info"
+          )
+          
+          # Build exclude pattern for grep
+          EXCLUDE_PATTERN=""
+          for DIR in "${EXCLUDE_DIRS[@]}"; do
+            EXCLUDE_PATTERN="$EXCLUDE_PATTERN --exclude-dir=$DIR"
+          done
+          
+          # Check for patterns
+          for PATTERN in "${PATTERNS[@]}"; do
+            echo "Checking for pattern: $PATTERN"
+            RESULTS=$(grep -r $EXCLUDE_PATTERN -i "$PATTERN" . || true)
+            
+            if [ -n "$RESULTS" ]; then
+              echo "⚠️ Warning: Found potentially sensitive pattern: $PATTERN"
+              echo "This may indicate exposure of proprietary information."
+              echo "Please review the following files:"
+              echo "$RESULTS" | cut -d: -f1 | sort | uniq
+              echo "::warning::Potentially sensitive information detected. Please review."
+            fi
+          done

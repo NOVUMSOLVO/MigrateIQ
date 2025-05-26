@@ -1,0 +1,272 @@
+name: Deploy to Production
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=tag
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build and push Docker image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+        build-args: |
+          BUILD_DATE=${{ github.event.head_commit.timestamp }}
+          VCS_REF=${{ github.sha }}
+          VERSION=${{ github.ref_name }}
+
+  deploy-staging:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'staging' || github.event_name == 'workflow_dispatch'
+    environment: staging
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+    
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+    
+    - name: Deploy to staging
+      run: |
+        export KUBECONFIG=kubeconfig
+        
+        # Update image tag in deployment
+        sed -i "s|IMAGE_TAG|${{ needs.build-and-push.outputs.image-tag }}|g" k8s/backend.yaml
+        
+        # Apply Kubernetes manifests
+        kubectl apply -f k8s/namespace.yaml
+        kubectl apply -f k8s/configmap.yaml
+        kubectl apply -f k8s/secrets.yaml
+        kubectl apply -f k8s/postgres.yaml
+        kubectl apply -f k8s/redis.yaml
+        kubectl apply -f k8s/backend.yaml
+        kubectl apply -f k8s/nginx.yaml
+        
+        # Wait for deployment to be ready
+        kubectl rollout status deployment/migrateiq-backend -n migrateiq --timeout=600s
+        
+        # Run database migrations
+        kubectl exec -n migrateiq deployment/migrateiq-backend -- python manage.py migrate
+        
+        # Collect static files
+        kubectl exec -n migrateiq deployment/migrateiq-backend -- python manage.py collectstatic --noinput
+    
+    - name: Run smoke tests
+      run: |
+        export KUBECONFIG=kubeconfig
+        
+        # Get service URL
+        SERVICE_URL=$(kubectl get service migrateiq-backend -n migrateiq -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+        
+        # Wait for service to be ready
+        timeout 300 bash -c 'until curl -f http://$SERVICE_URL/api/core/health/; do sleep 5; done'
+        
+        # Run basic health checks
+        curl -f http://$SERVICE_URL/api/core/health/ || exit 1
+        curl -f http://$SERVICE_URL/api/docs/ || exit 1
+    
+    - name: Notify deployment status
+      if: always()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow
+
+  deploy-production:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' || github.event.inputs.environment == 'production'
+    environment: production
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+    
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+    
+    - name: Pre-deployment checks
+      run: |
+        export KUBECONFIG=kubeconfig
+        
+        # Check cluster health
+        kubectl cluster-info
+        kubectl get nodes
+        
+        # Check current deployment status
+        kubectl get deployments -n migrateiq
+        
+        # Backup database before deployment
+        kubectl exec -n migrateiq deployment/postgres -- pg_dump -U migrateiq migrateiq > backup-$(date +%Y%m%d-%H%M%S).sql
+    
+    - name: Deploy to production
+      run: |
+        export KUBECONFIG=kubeconfig
+        
+        # Update image tag in deployment
+        sed -i "s|IMAGE_TAG|${{ needs.build-and-push.outputs.image-tag }}|g" k8s/backend.yaml
+        
+        # Apply Kubernetes manifests with rolling update
+        kubectl apply -f k8s/namespace.yaml
+        kubectl apply -f k8s/configmap.yaml
+        kubectl apply -f k8s/secrets.yaml
+        kubectl apply -f k8s/postgres.yaml
+        kubectl apply -f k8s/redis.yaml
+        kubectl apply -f k8s/backend.yaml
+        kubectl apply -f k8s/nginx.yaml
+        
+        # Wait for deployment to be ready
+        kubectl rollout status deployment/migrateiq-backend -n migrateiq --timeout=900s
+        
+        # Run database migrations
+        kubectl exec -n migrateiq deployment/migrateiq-backend -- python manage.py migrate
+        
+        # Collect static files
+        kubectl exec -n migrateiq deployment/migrateiq-backend -- python manage.py collectstatic --noinput
+        
+        # Optimize database
+        kubectl exec -n migrateiq deployment/migrateiq-backend -- python manage.py optimize_database --all
+    
+    - name: Post-deployment verification
+      run: |
+        export KUBECONFIG=kubeconfig
+        
+        # Get service URL
+        SERVICE_URL=$(kubectl get service migrateiq-backend -n migrateiq -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+        
+        # Wait for service to be ready
+        timeout 600 bash -c 'until curl -f https://$SERVICE_URL/api/core/health/; do sleep 10; done'
+        
+        # Run comprehensive health checks
+        curl -f https://$SERVICE_URL/api/core/health/ || exit 1
+        curl -f https://$SERVICE_URL/api/docs/ || exit 1
+        curl -f https://$SERVICE_URL/metrics || exit 1
+        
+        # Check database connectivity
+        kubectl exec -n migrateiq deployment/migrateiq-backend -- python manage.py check --database default
+        
+        # Verify all pods are running
+        kubectl get pods -n migrateiq
+        kubectl wait --for=condition=ready pod -l app=migrateiq-backend -n migrateiq --timeout=300s
+    
+    - name: Run post-deployment tests
+      run: |
+        # Run integration tests against production
+        # This would typically be a separate test suite
+        echo "Running post-deployment integration tests..."
+        
+        # Example: API endpoint tests
+        # pytest tests/integration/ --base-url=https://$SERVICE_URL
+    
+    - name: Update deployment status
+      if: always()
+      run: |
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ Production deployment successful" >> $GITHUB_STEP_SUMMARY
+          echo "🚀 Version: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Image: ${{ needs.build-and-push.outputs.image-tag }}" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Production deployment failed" >> $GITHUB_STEP_SUMMARY
+          echo "🔄 Consider rolling back to previous version" >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: Notify deployment status
+      if: always()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#production-deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow
+
+  rollback:
+    runs-on: ubuntu-latest
+    if: failure() && github.event_name == 'release'
+    needs: [deploy-production]
+    environment: production
+    
+    steps:
+    - name: Rollback deployment
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+        
+        # Rollback to previous deployment
+        kubectl rollout undo deployment/migrateiq-backend -n migrateiq
+        kubectl rollout status deployment/migrateiq-backend -n migrateiq --timeout=600s
+        
+        echo "🔄 Rollback completed" >> $GITHUB_STEP_SUMMARY

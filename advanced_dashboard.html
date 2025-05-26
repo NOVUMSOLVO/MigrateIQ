@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MigrateIQ - Advanced Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .metric-card h3 {
+            color: #667eea;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .metric-change {
+            font-size: 0.9rem;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .metric-change.positive {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .metric-change.negative {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .activity-feed {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .activity-icon.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .activity-icon.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .activity-icon.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .activity-time {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.online {
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.offline {
+            background: #dc3545;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .refresh-btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-style: italic;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 MigrateIQ Analytics</h1>
+        <p>Real-time Migration Platform Dashboard</p>
+    </div>
+    
+    <div class="container">
+        <button class="refresh-btn" onclick="refreshDashboard()">🔄 Refresh Dashboard</button>
+        
+        <div class="dashboard-grid" id="metrics-grid">
+            <!-- Metrics will be loaded dynamically -->
+        </div>
+        
+        <div class="chart-container">
+            <h3 class="chart-title">Migration Success Rate Trend</h3>
+            <canvas id="successRateChart" width="400" height="200"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <h3 class="chart-title">Data Volume Processed (GB)</h3>
+            <canvas id="dataVolumeChart" width="400" height="200"></canvas>
+        </div>
+        
+        <div class="activity-feed">
+            <h3 class="chart-title">Recent Activity</h3>
+            <div id="activity-list">
+                <!-- Activity items will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables for charts
+        let successRateChart;
+        let dataVolumeChart;
+        
+        // Initialize dashboard
+        async function initDashboard() {
+            await loadMetrics();
+            await loadActivity();
+            initCharts();
+        }
+        
+        // Load metrics from API
+        async function loadMetrics() {
+            try {
+                const response = await fetch('http://localhost:8000/api/analytics/dashboard/');
+                const data = await response.json();
+                
+                const metricsGrid = document.getElementById('metrics-grid');
+                metricsGrid.innerHTML = '';
+                
+                const dashboard = data.dashboard;
+                
+                // Create metric cards
+                const metrics = [
+                    {
+                        title: 'Total Projects',
+                        value: dashboard.total_projects,
+                        change: '+12%',
+                        changeType: 'positive',
+                        icon: '📊'
+                    },
+                    {
+                        title: 'Active Migrations',
+                        value: dashboard.active_migrations,
+                        change: '+2',
+                        changeType: 'positive',
+                        icon: '⚡'
+                    },
+                    {
+                        title: 'Success Rate',
+                        value: dashboard.success_rate + '%',
+                        change: '+2.1%',
+                        changeType: 'positive',
+                        icon: '✅'
+                    },
+                    {
+                        title: 'Avg Migration Time',
+                        value: dashboard.avg_migration_time,
+                        change: '-15min',
+                        changeType: 'positive',
+                        icon: '⏱️'
+                    },
+                    {
+                        title: 'Data Sources',
+                        value: dashboard.total_data_sources,
+                        change: '+1',
+                        changeType: 'positive',
+                        icon: '🔗'
+                    },
+                    {
+                        title: 'Completed Migrations',
+                        value: dashboard.completed_migrations,
+                        change: '+3',
+                        changeType: 'positive',
+                        icon: '🎯'
+                    }
+                ];
+                
+                metrics.forEach(metric => {
+                    const card = document.createElement('div');
+                    card.className = 'metric-card';
+                    card.innerHTML = `
+                        <h3>${metric.icon} ${metric.title}</h3>
+                        <div class="metric-value">${metric.value}</div>
+                        <span class="metric-change ${metric.changeType}">${metric.change}</span>
+                    `;
+                    metricsGrid.appendChild(card);
+                });
+                
+            } catch (error) {
+                console.error('Error loading metrics:', error);
+                document.getElementById('metrics-grid').innerHTML = '<div class="loading">Error loading metrics</div>';
+            }
+        }
+        
+        // Load activity feed
+        async function loadActivity() {
+            try {
+                const response = await fetch('http://localhost:8000/api/analytics/dashboard/');
+                const data = await response.json();
+                
+                const activityList = document.getElementById('activity-list');
+                activityList.innerHTML = '';
+                
+                const activities = data.dashboard.recent_activity;
+                
+                activities.forEach(activity => {
+                    const item = document.createElement('div');
+                    item.className = 'activity-item';
+                    
+                    let iconClass = 'info';
+                    let icon = '📝';
+                    
+                    if (activity.type === 'migration_completed') {
+                        iconClass = 'success';
+                        icon = '✅';
+                    } else if (activity.type === 'datasource_added') {
+                        iconClass = 'info';
+                        icon = '🔗';
+                    } else if (activity.type === 'migration_started') {
+                        iconClass = 'warning';
+                        icon = '🚀';
+                    }
+                    
+                    item.innerHTML = `
+                        <div class="activity-icon ${iconClass}">${icon}</div>
+                        <div class="activity-content">
+                            <div class="activity-title">${activity.project || activity.name}</div>
+                            <div class="activity-time">${new Date(activity.timestamp).toLocaleString()}</div>
+                        </div>
+                    `;
+                    activityList.appendChild(item);
+                });
+                
+            } catch (error) {
+                console.error('Error loading activity:', error);
+            }
+        }
+        
+        // Initialize charts
+        function initCharts() {
+            // Success Rate Chart
+            const successCtx = document.getElementById('successRateChart').getContext('2d');
+            successRateChart = new Chart(successCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Success Rate (%)',
+                        data: [89, 91, 93, 92, 94, 95],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // Data Volume Chart
+            const volumeCtx = document.getElementById('dataVolumeChart').getContext('2d');
+            dataVolumeChart = new Chart(volumeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Data Processed (GB)',
+                        data: [1250, 1890, 2340, 2100],
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: '#667eea',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Refresh dashboard
+        async function refreshDashboard() {
+            document.querySelector('.refresh-btn').textContent = '🔄 Refreshing...';
+            await loadMetrics();
+            await loadActivity();
+            document.querySelector('.refresh-btn').textContent = '🔄 Refresh Dashboard';
+        }
+        
+        // Auto-refresh every 30 seconds
+        setInterval(refreshDashboard, 30000);
+        
+        // Initialize on page load
+        window.addEventListener('load', initDashboard);
+    </script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort
+          if [ -f backend/requirements-dev.txt ]; then pip install -r backend/requirements-dev.txt; fi
+          
+      - name: Lint with flake8
+        run: |
+          flake8 backend --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 backend --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          
+      - name: Check formatting with black
+        run: black --check backend
+        
+      - name: Check imports with isort
+        run: isort --check-only --profile black backend
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install Node.js dependencies
+        run: |
+          cd frontend
+          npm ci
+          
+      - name: Lint with ESLint
+        run: |
+          cd frontend
+          npm run lint
+  
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_migrateiq
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install -r backend/requirements-dev.txt
+          
+      - name: Run tests
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_migrateiq
+          REDIS_URL: redis://localhost:6379/0
+          DJANGO_SETTINGS_MODULE: config.settings.test
+          SECRET_KEY: test-secret-key-for-ci
+        run: |
+          cd backend
+          python manage.py test
+          
+      - name: Generate coverage report
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_migrateiq
+          REDIS_URL: redis://localhost:6379/0
+          DJANGO_SETTINGS_MODULE: config.settings.test
+          SECRET_KEY: test-secret-key-for-ci
+        run: |
+          cd backend
+          coverage run --source='.' manage.py test
+          coverage xml
+          
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./backend/coverage.xml
+          flags: backend
+          fail_ci_if_error: false
+  
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+          
+      - name: Run tests
+        run: |
+          cd frontend
+          npm test -- --coverage
+          
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./frontend/coverage/coverage-final.json
+          flags: frontend
+          fail_ci_if_error: false
+
+  proprietary-check:
+    name: Check for Proprietary Code Modifications
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Check for changes in proprietary directories
+        run: |
+          PROPRIETARY_DIRS=(
+            "backend/ml/algorithms/"
+            "backend/mapping_engine/core/"
+            "backend/transformation/engine/"
+            "backend/analyzer/core/"
+            "backend/validation/rules/"
+          )
+          
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE_SHA="$(git rev-parse HEAD~1)"
+            HEAD_SHA="$(git rev-parse HEAD)"
+          fi
+          
+          MODIFIED_PROPRIETARY=false
+          
+          for DIR in "${PROPRIETARY_DIRS[@]}"; do
+            CHANGES=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- "$DIR")
+            if [ -n "$CHANGES" ]; then
+              echo "⚠️ Warning: Changes detected in proprietary directory: $DIR"
+              echo "Modified files:"
+              echo "$CHANGES"
+              MODIFIED_PROPRIETARY=true
+            fi
+          done
+          
+          if [ "$MODIFIED_PROPRIETARY" == "true" ]; then
+            echo "::warning::This PR modifies proprietary code that requires special review."
+            echo "Changes to proprietary code detected. These changes require special review by core maintainers." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No changes to proprietary code detected." >> $GITHUB_STEP_SUMMARY
+          fi

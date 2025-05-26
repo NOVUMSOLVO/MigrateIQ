@@ -1,0 +1,143 @@
+name: Dependency Scanning
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/requirements*.txt'
+      - 'frontend/package*.json'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/requirements*.txt'
+      - 'frontend/package*.json'
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sunday at midnight
+
+jobs:
+  scan-python-dependencies:
+    name: Scan Python Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety
+          
+      - name: Run safety check
+        run: |
+          cd backend
+          safety check -r requirements.txt --full-report
+          if [ -f requirements-dev.txt ]; then
+            safety check -r requirements-dev.txt --full-report
+          fi
+        continue-on-error: true
+      
+      - name: Run pip-audit
+        run: |
+          pip install pip-audit
+          cd backend
+          pip-audit -r requirements.txt
+          if [ -f requirements-dev.txt ]; then
+            pip-audit -r requirements-dev.txt
+          fi
+        continue-on-error: true
+  
+  scan-node-dependencies:
+    name: Scan Node.js Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+          
+      - name: Run npm audit
+        run: |
+          cd frontend
+          npm audit --production
+        continue-on-error: true
+      
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --file=frontend/package.json
+  
+  scan-docker-images:
+    name: Scan Docker Images
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'docker')
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Build backend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          push: false
+          load: true
+          tags: migrateiq-backend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Scan backend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: migrateiq-backend:test
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+      
+      - name: Build frontend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          push: false
+          load: true
+          tags: migrateiq-frontend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Scan frontend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: migrateiq-frontend:test
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+  
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v2
+        with:
+          fail-on-severity: high
+          deny-licenses: 'GPL-1.0-only, LGPL-2.0-only'  # Adjust as needed for license compliance

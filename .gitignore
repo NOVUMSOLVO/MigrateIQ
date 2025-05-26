@@ -1,0 +1,127 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.env
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# React/Node
+node_modules/
+.npm
+.pnp
+.pnp.js
+coverage/
+build/
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# ML Models and Data
+*.h5
+*.pkl
+*.model
+*.joblib
+*.bin
+*.onnx
+*.tflite
+*.pt
+*.pth
+*.weights
+*.tfrecord
+*.data-*
+*.index
+*.meta
+
+# Proprietary Code Protection
+# Core algorithms and business logic
+backend/ml/algorithms/proprietary_*.py
+backend/mapping_engine/core/proprietary_*.py
+backend/transformation/engine/proprietary_*.py
+backend/analyzer/core/proprietary_*.py
+backend/validation/rules/proprietary_*.py
+
+# Sensitive configuration
+**/secrets.yaml
+**/secrets.json
+**/credentials.json
+**/private_key.pem
+**/service-account*.json
+
+# Customer data
+data/customer_*.csv
+data/customer_*.json
+data/customer_*.xml
+data/customer_*.xlsx
+data/customer_*.parquet
+
+# Internal documentation
+docs/internal/
+docs/proprietary/
+
+# Test data with sensitive information
+tests/data/sensitive_*.csv
+tests/data/sensitive_*.json
+
+# Temporary files
+.temp/
+tmp/
+*.tmp
+*.bak
+
+# Logs
+logs/
+*.log.*
+
+# Docker
+.dockerignore
+
+# Local development overrides
+docker-compose.override.yml

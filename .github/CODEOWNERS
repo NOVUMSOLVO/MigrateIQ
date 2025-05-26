@@ -1,0 +1,39 @@
+# This file defines the code owners for different parts of the MigrateIQ repository
+# Code owners are automatically requested for review when someone opens a PR
+# that modifies code they own
+
+# Default owners for everything in the repo
+* @NOVUMSOLVO/maintainers
+
+# Core business logic and proprietary algorithms
+# These areas contain sensitive intellectual property and require special review
+/backend/ml/algorithms/ @NOVUMSOLVO/ml-team @NOVUMSOLVO/core-maintainers
+/backend/mapping_engine/core/ @NOVUMSOLVO/core-maintainers
+/backend/transformation/engine/ @NOVUMSOLVO/core-maintainers
+/backend/analyzer/core/ @NOVUMSOLVO/core-maintainers
+/backend/validation/rules/ @NOVUMSOLVO/core-maintainers
+
+# Frontend components
+/frontend/ @NOVUMSOLVO/frontend-team
+
+# Backend services
+/backend/api/ @NOVUMSOLVO/backend-team
+/backend/orchestrator/ @NOVUMSOLVO/backend-team
+/backend/monitoring/ @NOVUMSOLVO/devops-team
+
+# Infrastructure and deployment
+/deployment/ @NOVUMSOLVO/devops-team
+/docker/ @NOVUMSOLVO/devops-team
+/.github/ @NOVUMSOLVO/devops-team
+
+# Documentation
+/docs/ @NOVUMSOLVO/docs-team @NOVUMSOLVO/maintainers
+
+# Security-sensitive files
+/backend/security/ @NOVUMSOLVO/security-team
+SECURITY.md @NOVUMSOLVO/security-team
+
+# Legal documents
+LICENSE @NOVUMSOLVO/legal
+CODE_OF_CONDUCT.md @NOVUMSOLVO/maintainers
+CONTRIBUTING.md @NOVUMSOLVO/maintainers

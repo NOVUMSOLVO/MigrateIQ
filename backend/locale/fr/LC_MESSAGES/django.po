@@ -1,0 +1,172 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: MigrateIQ 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+# Admin site
+msgid "MigrateIQ Administration"
+msgstr "Administration MigrateIQ"
+
+msgid "MigrateIQ Admin"
+msgstr "Admin MigrateIQ"
+
+msgid "Welcome to MigrateIQ Administration"
+msgstr "Bienvenue dans l'Administration MigrateIQ"
+
+# Authentication
+msgid "Password changed successfully"
+msgstr "Mot de passe modifié avec succès"
+
+msgid "User does not belong to this tenant"
+msgstr "L'utilisateur n'appartient pas à ce locataire"
+
+msgid "Logged out successfully"
+msgstr "Déconnexion réussie"
+
+msgid "Error during logout"
+msgstr "Erreur lors de la déconnexion"
+
+msgid "You do not have permission to invite users"
+msgstr "Vous n'avez pas la permission d'inviter des utilisateurs"
+
+msgid "Invalid or expired invitation"
+msgstr "Invitation invalide ou expirée"
+
+msgid "Invitation has expired"
+msgstr "L'invitation a expiré"
+
+# Core
+msgid "No tenant found"
+msgstr "Aucun locataire trouvé"
+
+msgid "Tenant activated successfully"
+msgstr "Locataire activé avec succès"
+
+msgid "Tenant deactivated successfully"
+msgstr "Locataire désactivé avec succès"
+
+msgid "Feature flag toggled successfully"
+msgstr "Indicateur de fonctionnalité basculé avec succès"
+
+# Permissions
+msgid "You must be a superuser to perform this action."
+msgstr "Vous devez être un superutilisateur pour effectuer cette action."
+
+msgid "You must be a tenant admin to perform this action."
+msgstr "Vous devez être un administrateur de locataire pour effectuer cette action."
+
+msgid "You must be a superuser or tenant admin to perform this action."
+msgstr "Vous devez être un superutilisateur ou un administrateur de locataire pour effectuer cette action."
+
+msgid "You must be a member of this tenant to perform this action."
+msgstr "Vous devez être membre de ce locataire pour effectuer cette action."
+
+msgid "You must be the owner or a tenant admin to perform this action."
+msgstr "Vous devez être le propriétaire ou un administrateur de locataire pour effectuer cette action."
+
+msgid "You do not have permission to manage users."
+msgstr "Vous n'avez pas la permission de gérer les utilisateurs."
+
+msgid "You do not have permission to manage projects."
+msgstr "Vous n'avez pas la permission de gérer les projets."
+
+msgid "You do not have permission to view audit logs."
+msgstr "Vous n'avez pas la permission de voir les journaux d'audit."
+
+msgid "You do not have permission to modify this resource."
+msgstr "Vous n'avez pas la permission de modifier cette ressource."
+
+# Validation messages
+msgid "Tenant with this slug already exists."
+msgstr "Un locataire avec ce slug existe déjà."
+
+msgid "Max users must be at least 1."
+msgstr "Le nombre maximum d'utilisateurs doit être d'au moins 1."
+
+msgid "Storage limit cannot be negative."
+msgstr "La limite de stockage ne peut pas être négative."
+
+msgid "Configuration with this key already exists."
+msgstr "Une configuration avec cette clé existe déjà."
+
+msgid "Configuration value cannot be empty."
+msgstr "La valeur de configuration ne peut pas être vide."
+
+msgid "Feature with this name already exists."
+msgstr "Une fonctionnalité avec ce nom existe déjà."
+
+msgid "Rollout percentage must be between 0 and 100."
+msgstr "Le pourcentage de déploiement doit être entre 0 et 100."
+
+# Model fields
+msgid "Personal info"
+msgstr "Informations personnelles"
+
+msgid "Tenant & Role"
+msgstr "Locataire et Rôle"
+
+msgid "Permissions"
+msgstr "Permissions"
+
+msgid "Security"
+msgstr "Sécurité"
+
+msgid "Preferences"
+msgstr "Préférences"
+
+msgid "Important dates"
+msgstr "Dates importantes"
+
+msgid "Contact Information"
+msgstr "Informations de contact"
+
+msgid "Subscription"
+msgstr "Abonnement"
+
+msgid "Limits"
+msgstr "Limites"
+
+msgid "Status"
+msgstr "Statut"
+
+msgid "Settings"
+msgstr "Paramètres"
+
+msgid "Timestamps"
+msgstr "Horodatages"
+
+msgid "Resource"
+msgstr "Ressource"
+
+msgid "Request Info"
+msgstr "Informations de requête"
+
+msgid "Metadata"
+msgstr "Métadonnées"
+
+msgid "Rollout Settings"
+msgstr "Paramètres de déploiement"
+
+msgid "Tenant Whitelist"
+msgstr "Liste blanche des locataires"
+
+msgid "Users"
+msgstr "Utilisateurs"
+
+msgid "Whitelisted Tenants"
+msgstr "Locataires en liste blanche"

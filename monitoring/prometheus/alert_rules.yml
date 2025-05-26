@@ -1,0 +1,226 @@
+# Prometheus alert rules for MigrateIQ
+
+groups:
+  - name: migrateiq.application
+    rules:
+      - alert: HighErrorRate
+        expr: rate(migrateiq_http_requests_total{status_code=~"5.."}[5m]) / rate(migrateiq_http_requests_total[5m]) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }}% for the last 5 minutes"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(migrateiq_http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          component: application
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s"
+
+      - alert: LowRequestRate
+        expr: rate(migrateiq_http_requests_total[5m]) < 0.1
+        for: 10m
+        labels:
+          severity: warning
+          component: application
+        annotations:
+          summary: "Low request rate detected"
+          description: "Request rate is {{ $value }} requests/second"
+
+      - alert: ApplicationDown
+        expr: up{job="migrateiq-django"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "MigrateIQ application is down"
+          description: "MigrateIQ Django application has been down for more than 1 minute"
+
+  - name: migrateiq.database
+    rules:
+      - alert: HighDatabaseQueryTime
+        expr: histogram_quantile(0.95, rate(migrateiq_db_query_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High database query time"
+          description: "95th percentile database query time is {{ $value }}s"
+
+      - alert: HighDatabaseConnections
+        expr: migrateiq_db_connections_active > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High number of database connections"
+          description: "Number of active database connections is {{ $value }}"
+
+      - alert: DatabaseDown
+        expr: up{job="postgresql"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "PostgreSQL database has been down for more than 1 minute"
+
+  - name: migrateiq.cache
+    rules:
+      - alert: LowCacheHitRate
+        expr: migrateiq_cache_hit_rate < 70
+        for: 10m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Low cache hit rate"
+          description: "Cache hit rate is {{ $value }}%"
+
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: cache
+        annotations:
+          summary: "Redis cache is down"
+          description: "Redis cache has been down for more than 1 minute"
+
+  - name: migrateiq.tasks
+    rules:
+      - alert: HighTaskFailureRate
+        expr: rate(migrateiq_tasks_total{status="failure"}[5m]) / rate(migrateiq_tasks_total[5m]) * 100 > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: celery
+        annotations:
+          summary: "High task failure rate"
+          description: "Task failure rate is {{ $value }}%"
+
+      - alert: LongRunningTasks
+        expr: histogram_quantile(0.95, rate(migrateiq_task_duration_seconds_bucket[5m])) > 300
+        for: 5m
+        labels:
+          severity: warning
+          component: celery
+        annotations:
+          summary: "Long running tasks detected"
+          description: "95th percentile task duration is {{ $value }}s"
+
+      - alert: HighTaskQueueSize
+        expr: migrateiq_task_queue_size > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: celery
+        annotations:
+          summary: "High task queue size"
+          description: "Task queue size is {{ $value }}"
+
+      - alert: CeleryWorkersDown
+        expr: up{job="celery"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: celery
+        annotations:
+          summary: "Celery workers are down"
+          description: "Celery workers have been down for more than 1 minute"
+
+  - name: migrateiq.system
+    rules:
+      - alert: HighMemoryUsage
+        expr: (migrateiq_memory_usage_bytes{type="used"} / migrateiq_memory_usage_bytes{type="total"}) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}%"
+
+      - alert: HighErrorCount
+        expr: rate(migrateiq_errors_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High error count"
+          description: "Error rate is {{ $value }} errors/second"
+
+  - name: migrateiq.business
+    rules:
+      - alert: NoActiveUsers
+        expr: migrateiq_users_total{status="active"} == 0
+        for: 30m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "No active users"
+          description: "No active users detected for 30 minutes"
+
+      - alert: LowMigrationActivity
+        expr: rate(migrateiq_migrations_total[1h]) < 0.01
+        for: 2h
+        labels:
+          severity: info
+          component: business
+        annotations:
+          summary: "Low migration activity"
+          description: "Migration rate is {{ $value }} migrations/hour"
+
+  - name: migrateiq.infrastructure
+    rules:
+      - alert: NodeDown
+        expr: up{job="node"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "Node is down"
+          description: "Node {{ $labels.instance }} has been down for more than 1 minute"
+
+      - alert: NginxDown
+        expr: up{job="nginx"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "Nginx is down"
+          description: "Nginx reverse proxy has been down for more than 1 minute"
+
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_avail_bytes{fstype!="tmpfs"}) / node_filesystem_size_bytes{fstype!="tmpfs"} * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "High disk usage"
+          description: "Disk usage is {{ $value }}% on {{ $labels.device }}"
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
