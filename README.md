@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MigrateIQ - AI-Powered Data Migration Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -300,3 +301,6 @@ MigrateIQ is licensed under the MIT License with additional terms - see the [LIC
 ---
 
 © 2024 NOVUMSOLVO. All rights reserved.
+=======
+# MigrateIQ
+>>>>>>> 0565931c68f8d6b085f59f97d067bdf350038c06
