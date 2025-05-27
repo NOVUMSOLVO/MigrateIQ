@@ -71,21 +71,19 @@ class UserModelTests(TestCase):
         )
 
     def test_create_user_with_tenant(self):
-        """Test creating a user with tenant."""
+        """Test creating a user with additional fields."""
         user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
             password='testpass123',
             first_name='Test',
             last_name='User',
-            tenant=self.tenant,
             role='admin',
             phone='+1234567890'
         )
 
         self.assertEqual(user.username, 'testuser')
         self.assertEqual(user.email, 'test@example.com')
-        self.assertEqual(user.tenant, self.tenant)
         self.assertEqual(user.role, 'admin')
         self.assertEqual(user.phone, '+1234567890')
 

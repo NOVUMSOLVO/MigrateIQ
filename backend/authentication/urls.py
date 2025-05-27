@@ -21,10 +21,8 @@ urlpatterns = [
     
     # User profile endpoints
     path('profile/', views.UserProfileView.as_view(), name='user_profile'),
-    path('password/change/', views.PasswordChangeView.as_view(), name='password_change'),
+    path('password/change/', views.change_password_view, name='password_change'),
     
-    # User invitation endpoints
-    path('invitations/', views.UserInvitationListCreateView.as_view(), name='invitation_list_create'),
-    path('invitations/<uuid:invitation_id>/', views.invitation_detail_view, name='invitation_detail'),
-    path('invitations/<uuid:invitation_id>/accept/', views.accept_invitation_view, name='invitation_accept'),
+    # User management endpoints
+    path('users/', views.UserListCreateView.as_view(), name='user_list_create'),
 ]

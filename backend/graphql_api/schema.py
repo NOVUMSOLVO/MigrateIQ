@@ -5,6 +5,7 @@ GraphQL schema for MigrateIQ API.
 import graphene
 from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
+from graphene import relay
 from graphql_jwt.decorators import login_required
 from django.contrib.auth import get_user_model
 from core.models import Tenant, AuditLog, SystemConfiguration
@@ -20,98 +21,108 @@ class UserType(DjangoObjectType):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'date_joined')
+        interfaces = (relay.Node,)
 
 
 class TenantType(DjangoObjectType):
     class Meta:
         model = Tenant
         fields = ('id', 'name', 'slug', 'is_active', 'created_at', 'updated_at')
+        interfaces = (relay.Node,)
 
 
 class AuditLogType(DjangoObjectType):
     class Meta:
         model = AuditLog
-        fields = ('id', 'action', 'object_type', 'object_id', 'user', 'tenant', 'timestamp', 'ip_address')
+        fields = ('id', 'action', 'resource_type', 'resource_id', 'user', 'tenant', 'timestamp', 'ip_address')
+        interfaces = (relay.Node,)
 
 
 class SystemConfigurationType(DjangoObjectType):
     class Meta:
         model = SystemConfiguration
         fields = ('id', 'key', 'value', 'description', 'is_active')
+        interfaces = (relay.Node,)
 
 
 class MigrationProjectType(DjangoObjectType):
     class Meta:
         model = MigrationProject
-        fields = ('id', 'name', 'description', 'status', 'created_at', 'updated_at', 'tenant')
+        fields = ('id', 'name', 'description', 'status', 'created_at', 'updated_at')
+        interfaces = (relay.Node,)
 
 
 class MigrationTaskType(DjangoObjectType):
     class Meta:
         model = MigrationTask
         fields = ('id', 'name', 'status', 'project', 'created_at', 'updated_at')
+        interfaces = (relay.Node,)
 
 
 class DataSourceType(DjangoObjectType):
     class Meta:
         model = DataSource
-        fields = ('id', 'name', 'type', 'connection_string', 'is_active', 'tenant')
+        fields = ('id', 'name', 'source_type', 'connection_string')
+        interfaces = (relay.Node,)
 
 
 class EntityType(DjangoObjectType):
     class Meta:
         model = Entity
-        fields = ('id', 'name', 'type', 'data_source', 'schema_info')
+        fields = ('id', 'name', 'description', 'data_source', 'record_count')
+        interfaces = (relay.Node,)
 
 
 class ValidationRuleType(DjangoObjectType):
     class Meta:
         model = ValidationRule
-        fields = ('id', 'name', 'rule_type', 'configuration', 'is_active')
+        fields = ('id', 'name', 'rule_type', 'rule_definition', 'is_critical')
+        interfaces = (relay.Node,)
 
 
 class ValidationJobType(DjangoObjectType):
     class Meta:
         model = ValidationJob
-        fields = ('id', 'name', 'status', 'created_at', 'completed_at')
+        fields = ('id', 'status', 'started_at', 'completed_at', 'records_processed')
+        interfaces = (relay.Node,)
 
 
 # Query class
 class Query(graphene.ObjectType):
     # User queries
     me = graphene.Field(UserType)
-    users = DjangoFilterConnectionField(UserType)
-    
+    users = graphene.List(UserType)
+
     # Tenant queries
     current_tenant = graphene.Field(TenantType)
-    tenants = DjangoFilterConnectionField(TenantType)
-    
+    tenants = graphene.List(TenantType)
+
     # Audit log queries
-    audit_logs = DjangoFilterConnectionField(AuditLogType)
-    
+    audit_logs = graphene.List(AuditLogType)
+
     # System configuration queries
-    system_configurations = DjangoFilterConnectionField(SystemConfigurationType)
+    system_configurations = graphene.List(SystemConfigurationType)
     system_config = graphene.Field(SystemConfigurationType, key=graphene.String(required=True))
-    
+
     # Migration project queries
-    migration_projects = DjangoFilterConnectionField(MigrationProjectType)
+    migration_projects = graphene.List(MigrationProjectType)
     migration_project = graphene.Field(MigrationProjectType, id=graphene.ID(required=True))
-    
+
     # Migration task queries
-    migration_tasks = DjangoFilterConnectionField(MigrationTaskType)
+    migration_tasks = graphene.List(MigrationTaskType)
     migration_task = graphene.Field(MigrationTaskType, id=graphene.ID(required=True))
-    
+
     # Data source queries
-    data_sources = DjangoFilterConnectionField(DataSourceType)
+    data_sources = graphene.List(DataSourceType)
     data_source = graphene.Field(DataSourceType, id=graphene.ID(required=True))
-    
+
     # Entity queries
-    entities = DjangoFilterConnectionField(EntityType)
+    entities = graphene.List(EntityType)
     entity = graphene.Field(EntityType, id=graphene.ID(required=True))
-    
+
     # Validation queries
-    validation_rules = DjangoFilterConnectionField(ValidationRuleType)
-    validation_jobs = DjangoFilterConnectionField(ValidationJobType)
+    validation_rules = graphene.List(ValidationRuleType)
+    validation_jobs = graphene.List(ValidationJobType)
 
     @login_required
     def resolve_me(self, info):
@@ -119,9 +130,29 @@ class Query(graphene.ObjectType):
         return info.context.user
 
     @login_required
+    def resolve_users(self, info):
+        """Get all users."""
+        return User.objects.all()
+
+    @login_required
     def resolve_current_tenant(self, info):
         """Get current user's tenant."""
         return getattr(info.context.user, 'tenant', None)
+
+    @login_required
+    def resolve_tenants(self, info):
+        """Get all tenants."""
+        return Tenant.objects.all()
+
+    @login_required
+    def resolve_audit_logs(self, info):
+        """Get audit logs."""
+        return AuditLog.objects.all()
+
+    @login_required
+    def resolve_system_configurations(self, info):
+        """Get system configurations."""
+        return SystemConfiguration.objects.filter(is_active=True)
 
     @login_required
     def resolve_system_config(self, info, key):
@@ -132,36 +163,66 @@ class Query(graphene.ObjectType):
             return None
 
     @login_required
+    def resolve_migration_projects(self, info):
+        """Get migration projects."""
+        return MigrationProject.objects.all()
+
+    @login_required
     def resolve_migration_project(self, info, id):
         """Get migration project by ID."""
         try:
-            return MigrationProject.objects.get(id=id, tenant=info.context.user.tenant)
+            return MigrationProject.objects.get(id=id)
         except MigrationProject.DoesNotExist:
             return None
+
+    @login_required
+    def resolve_migration_tasks(self, info):
+        """Get migration tasks."""
+        return MigrationTask.objects.all()
 
     @login_required
     def resolve_migration_task(self, info, id):
         """Get migration task by ID."""
         try:
-            return MigrationTask.objects.get(id=id, project__tenant=info.context.user.tenant)
+            return MigrationTask.objects.get(id=id)
         except MigrationTask.DoesNotExist:
             return None
+
+    @login_required
+    def resolve_data_sources(self, info):
+        """Get data sources."""
+        return DataSource.objects.all()
 
     @login_required
     def resolve_data_source(self, info, id):
         """Get data source by ID."""
         try:
-            return DataSource.objects.get(id=id, tenant=info.context.user.tenant)
+            return DataSource.objects.get(id=id)
         except DataSource.DoesNotExist:
             return None
+
+    @login_required
+    def resolve_entities(self, info):
+        """Get entities."""
+        return Entity.objects.all()
 
     @login_required
     def resolve_entity(self, info, id):
         """Get entity by ID."""
         try:
-            return Entity.objects.get(id=id, data_source__tenant=info.context.user.tenant)
+            return Entity.objects.get(id=id)
         except Entity.DoesNotExist:
             return None
+
+    @login_required
+    def resolve_validation_rules(self, info):
+        """Get validation rules."""
+        return ValidationRule.objects.all()
+
+    @login_required
+    def resolve_validation_jobs(self, info):
+        """Get validation jobs."""
+        return ValidationJob.objects.all()
 
 
 # Mutation classes
@@ -180,7 +241,8 @@ class CreateMigrationProject(graphene.Mutation):
             project = MigrationProject.objects.create(
                 name=name,
                 description=description or '',
-                tenant=info.context.user.tenant
+                source_system='Source',
+                target_system='Target'
             )
             return CreateMigrationProject(
                 migration_project=project,
@@ -208,15 +270,15 @@ class UpdateMigrationProject(graphene.Mutation):
     @login_required
     def mutate(self, info, id, name=None, description=None):
         try:
-            project = MigrationProject.objects.get(id=id, tenant=info.context.user.tenant)
-            
+            project = MigrationProject.objects.get(id=id)
+
             if name is not None:
                 project.name = name
             if description is not None:
                 project.description = description
-            
+
             project.save()
-            
+
             return UpdateMigrationProject(
                 migration_project=project,
                 success=True,
@@ -246,9 +308,9 @@ class DeleteMigrationProject(graphene.Mutation):
     @login_required
     def mutate(self, info, id):
         try:
-            project = MigrationProject.objects.get(id=id, tenant=info.context.user.tenant)
+            project = MigrationProject.objects.get(id=id)
             project.delete()
-            
+
             return DeleteMigrationProject(
                 success=True,
                 errors=[]
@@ -280,9 +342,8 @@ class CreateDataSource(graphene.Mutation):
         try:
             data_source = DataSource.objects.create(
                 name=name,
-                type=type,
-                connection_string=connection_string,
-                tenant=info.context.user.tenant
+                source_type=type,
+                connection_string=connection_string
             )
             return CreateDataSource(
                 data_source=data_source,

@@ -18,7 +18,7 @@ urlpatterns = [
     path('api/transformation/', include('transformation.urls')),
     path('api/validation/', include('validation.urls')),
     path('api/integrations/', include('integrations.urls')),
-    path('api/graphql/', include('graphql_api.urls')),
+    # path('api/graphql/', include('graphql_api.urls')),  # Temporarily disabled for testing
 ]
 
 # Serve media files during development

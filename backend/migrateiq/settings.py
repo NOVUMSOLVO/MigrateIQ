@@ -3,6 +3,8 @@ Django settings for migrateiq project.
 """
 
 import os
+import base64
+import secrets
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -76,6 +78,11 @@ INSTALLED_APPS = [
     'reporting',
     'integrations.apps.IntegrationsConfig',
     'graphql_api.apps.GraphqlApiConfig',
+    # NHS Compliance modules
+    'nhs_compliance.apps.NhsComplianceConfig',
+    'healthcare_standards.apps.HealthcareStandardsConfig',
+    # Demo extension
+    'demo_extension',
 ]
 
 MIDDLEWARE = [
@@ -357,6 +364,14 @@ TENANT_DOMAIN_MODEL = 'core.Domain'
 # Custom user model
 AUTH_USER_MODEL = 'authentication.User'
 
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'guardian.backends.ObjectPermissionBackend',
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.azuread_tenant.AzureADTenantOAuth2',
+]
+
 # Site ID for django.contrib.sites
 SITE_ID = 1
 
@@ -599,6 +614,51 @@ GRAPHENE = {
     'MIDDLEWARE': [
         'graphql_jwt.middleware.JSONWebTokenMiddleware',
     ],
+}
+
+# NHS Compliance Settings
+NHS_COMPLIANCE = {
+    'DSPT_MONITORING_ENABLED': True,
+    'CQC_AUDIT_RETENTION_YEARS': 7,
+    'PATIENT_SAFETY_REPORTING_ENABLED': True,
+    'AUTOMATIC_INCIDENT_DETECTION': True,
+}
+
+# NHS Encryption Settings (DSPT Requirements)
+NHS_ENCRYPTION_MASTER_KEY = os.getenv('NHS_ENCRYPTION_MASTER_KEY', base64.b64encode(secrets.token_bytes(32)).decode())
+NHS_ENCRYPTION_KEY_ROTATION_DAYS = int(os.getenv('NHS_ENCRYPTION_KEY_ROTATION_DAYS', '90'))
+NHS_BACKUP_ROOT = os.getenv('NHS_BACKUP_ROOT', '/var/backups/migrateiq')
+
+# Healthcare Standards Settings
+HEALTHCARE_STANDARDS_ENABLED = True
+HEALTHCARE_STANDARDS = {
+    'HL7_VALIDATION_ENABLED': True,
+    'FHIR_VALIDATION_ENABLED': True,
+    'DICOM_VALIDATION_ENABLED': True,
+    'NHS_NUMBER_VALIDATION_ENABLED': True,
+    'SNOMED_CT_VALIDATION_ENABLED': False,  # Requires license
+    'ICD_10_VALIDATION_ENABLED': False,     # Requires license
+}
+
+# DSPT (Data Security and Protection Toolkit) Settings
+DSPT_SETTINGS = {
+    'ENCRYPTION_AT_REST': 'AES-256',
+    'ENCRYPTION_IN_TRANSIT': 'TLS-1.3',
+    'ACCESS_CONTROL_REQUIRED': True,
+    'MFA_REQUIRED': True,
+    'AUDIT_RETENTION_YEARS': 7,
+    'BACKUP_FREQUENCY_HOURS': 24,
+    'RECOVERY_TIME_OBJECTIVE_HOURS': 4,
+    'RECOVERY_POINT_OBJECTIVE_HOURS': 1,
+}
+
+# CQC (Care Quality Commission) Settings
+CQC_SETTINGS = {
+    'AUDIT_TRAIL_ENABLED': True,
+    'PATIENT_SAFETY_MONITORING': True,
+    'INCIDENT_REPORTING_ENABLED': True,
+    'COMPLIANCE_DASHBOARD_ENABLED': True,
+    'AUTOMATIC_ALERTS_ENABLED': True,
 }
 
 # GraphQL JWT Settings

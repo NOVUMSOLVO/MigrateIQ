@@ -1,0 +1,246 @@
+{
+  "encryption_keys": {
+    "master_key": "xuNmsAPCoSIcgbo9SGkukPjeN28w5T9TPaidBDw8cLQ=",
+    "key_id": "882cbbcd28793b27",
+    "created_at": "2025-05-26T17:02:07.231061",
+    "rotation_date": "2025-08-24T17:02:07.230801",
+    "algorithm": "AES-256-GCM",
+    "key_size": 256
+  },
+  "organization": {
+    "id": 1,
+    "ods_code": "ABC123",
+    "organization_name": "Demo NHS Trust",
+    "organization_type": "NHS_TRUST",
+    "primary_contact_name": "Dr. Sarah Wilson",
+    "primary_contact_email": "sarah.wilson@nhstrust.nhs.uk",
+    "primary_contact_phone": "+44 20 7946 0958",
+    "dspt_status": "COMPLIANT",
+    "dspt_expiry_date": "2025-11-22",
+    "cqc_registration_number": "CQC-12345",
+    "data_protection_officer": "Jane Smith",
+    "caldicott_guardian": "Dr. Michael Brown",
+    "created_at": "2025-05-26T17:02:07.231356",
+    "updated_at": "2025-05-26T17:02:07.231455"
+  },
+  "dspt_assessment": {
+    "id": 1,
+    "organization_id": 1,
+    "assessment_year": "2023-2024",
+    "submission_date": "2025-04-26T17:02:07.231536",
+    "mandatory_evidence_complete": true,
+    "data_security_score": 95,
+    "staff_responsibilities_score": 88,
+    "training_score": 92,
+    "overall_status": "STANDARDS_MET",
+    "compliance_notes": "All mandatory evidence items completed. Strong security posture with AES-256 encryption and comprehensive audit trails.",
+    "action_plan": "Continue monitoring and maintain current standards. Schedule next assessment for 2024-2025.",
+    "created_at": "2025-05-26T17:02:07.231553",
+    "updated_at": "2025-05-26T17:02:07.231557"
+  },
+  "audit_trails": [
+    {
+      "id": 1,
+      "audit_id": "AUDIT-20250526-0001",
+      "organization_id": 1,
+      "event_timestamp": "2025-05-26T15:02:07.231625",
+      "category": "PATIENT_SAFETY",
+      "severity": "HIGH",
+      "event_description": "Patient data migration completed successfully for 1,250 patient records",
+      "technical_details": {
+        "migration_job_id": "MIG-001",
+        "records_processed": 1250,
+        "validation_passed": true,
+        "encryption_verified": true
+      },
+      "patient_data_affected": true,
+      "patient_count_affected": 1250,
+      "clinical_impact_assessment": "No clinical impact - all data integrity checks passed",
+      "immediate_action_taken": "Post-migration validation completed successfully",
+      "resolution_status": "RESOLVED",
+      "resolution_timestamp": "2025-05-26T16:02:07.231639",
+      "created_at": "2025-05-26T17:02:07.231646",
+      "updated_at": "2025-05-26T17:02:07.231649"
+    },
+    {
+      "id": 2,
+      "audit_id": "AUDIT-20250526-0002",
+      "organization_id": 1,
+      "event_timestamp": "2025-05-26T13:02:07.231665",
+      "category": "DATA_INTEGRITY",
+      "severity": "MEDIUM",
+      "event_description": "Healthcare data validation performed on HL7 messages",
+      "technical_details": {
+        "validation_type": "HL7_ADT",
+        "messages_validated": 500,
+        "validation_errors": 0,
+        "nhs_numbers_verified": 500
+      },
+      "patient_data_affected": true,
+      "patient_count_affected": 500,
+      "clinical_impact_assessment": "Validation successful - all HL7 messages NHS compliant",
+      "immediate_action_taken": "All messages passed validation",
+      "resolution_status": "RESOLVED",
+      "resolution_timestamp": "2025-05-26T14:02:07.231676",
+      "created_at": "2025-05-26T17:02:07.231683",
+      "updated_at": "2025-05-26T17:02:07.231687"
+    },
+    {
+      "id": 3,
+      "audit_id": "AUDIT-20250526-0003",
+      "organization_id": 1,
+      "event_timestamp": "2025-05-26T11:02:07.231702",
+      "category": "SYSTEM_CHANGE",
+      "severity": "HIGH",
+      "event_description": "NHS-compliant encryption enabled for all patient data",
+      "technical_details": {
+        "encryption_algorithm": "AES-256-GCM",
+        "key_rotation_enabled": true,
+        "patient_records_encrypted": 2000,
+        "nhs_number_entropy_enabled": true
+      },
+      "patient_data_affected": true,
+      "patient_count_affected": 2000,
+      "clinical_impact_assessment": "Enhanced security - no clinical workflow impact",
+      "immediate_action_taken": "Encryption verification completed",
+      "resolution_status": "RESOLVED",
+      "resolution_timestamp": "2025-05-26T12:02:07.231770",
+      "created_at": "2025-05-26T17:02:07.231781",
+      "updated_at": "2025-05-26T17:02:07.231785"
+    }
+  ],
+  "safety_incidents": [
+    {
+      "id": 1,
+      "incident_id": "INC-20250526-0001",
+      "organization_id": 1,
+      "incident_date": "2025-05-19T17:02:07.232037",
+      "incident_type": "SYSTEM_DOWNTIME",
+      "incident_description": "Brief system downtime during planned migration window (15 minutes)",
+      "patients_affected": 0,
+      "harm_level": "NO_HARM",
+      "clinical_consequences": "No patient harm - occurred during planned maintenance window outside clinical hours",
+      "reported_date": "2025-05-20T17:02:07.232052",
+      "investigation_required": true,
+      "investigation_status": "COMPLETED",
+      "nrls_reported": false,
+      "cqc_notified": false,
+      "ico_notified": false,
+      "created_at": "2025-05-26T17:02:07.232057",
+      "updated_at": "2025-05-26T17:02:07.232059"
+    },
+    {
+      "id": 2,
+      "incident_id": "INC-20250526-0002",
+      "organization_id": 1,
+      "incident_date": "2025-05-12T17:02:07.232074",
+      "incident_type": "DATA_CORRUPTION",
+      "incident_description": "Minor data formatting issue detected in 5 patient records during validation",
+      "patients_affected": 5,
+      "harm_level": "NO_HARM",
+      "clinical_consequences": "Data formatting corrected before clinical use - no patient impact",
+      "reported_date": "2025-05-13T17:02:07.232082",
+      "investigation_required": true,
+      "investigation_status": "COMPLETED",
+      "nrls_reported": false,
+      "cqc_notified": false,
+      "ico_notified": false,
+      "created_at": "2025-05-26T17:02:07.232086",
+      "updated_at": "2025-05-26T17:02:07.232090"
+    }
+  ],
+  "compliance_checklist": {
+    "id": 1,
+    "organization_id": 1,
+    "project_name": "NHS Patient Data Migration Project - Phase 1",
+    "risk_assessment_completed": true,
+    "data_mapping_validated": true,
+    "backup_strategy_confirmed": true,
+    "rollback_plan_tested": true,
+    "encryption_verified": true,
+    "access_controls_tested": true,
+    "audit_logging_enabled": true,
+    "dspt_compliance_verified": true,
+    "gdpr_assessment_completed": true,
+    "caldicott_approval_obtained": true,
+    "data_integrity_verified": true,
+    "system_performance_tested": true,
+    "user_acceptance_completed": true,
+    "completion_date": "2025-05-26T17:02:07.232166",
+    "created_at": "2025-05-26T17:02:07.232173",
+    "updated_at": "2025-05-26T17:02:07.232176"
+  },
+  "compliance_score": {
+    "score": 95,
+    "max_score": 100,
+    "percentage": 95.0,
+    "grade": "A"
+  },
+  "dashboard_data": {
+    "organization": {
+      "id": 1,
+      "ods_code": "ABC123",
+      "organization_name": "Demo NHS Trust",
+      "organization_type": "NHS_TRUST",
+      "primary_contact_name": "Dr. Sarah Wilson",
+      "primary_contact_email": "sarah.wilson@nhstrust.nhs.uk",
+      "primary_contact_phone": "+44 20 7946 0958",
+      "dspt_status": "COMPLIANT",
+      "dspt_expiry_date": "2025-11-22",
+      "cqc_registration_number": "CQC-12345",
+      "data_protection_officer": "Jane Smith",
+      "caldicott_guardian": "Dr. Michael Brown",
+      "created_at": "2025-05-26T17:02:07.231356",
+      "updated_at": "2025-05-26T17:02:07.231455"
+    },
+    "dspt_status": {
+      "status": "COMPLIANT",
+      "assessment_year": "2023-2024",
+      "overall_status": "STANDARDS_MET",
+      "expiry_date": "2025-11-22",
+      "days_until_expiry": 180,
+      "scores": {
+        "data_security": 95,
+        "staff_responsibilities": 88,
+        "training": 92
+      }
+    },
+    "audit_summary": {
+      "last_30_days": {
+        "total": 3,
+        "critical": 0,
+        "high": 2,
+        "medium": 1,
+        "low": 0
+      }
+    },
+    "safety_incidents": {
+      "last_30_days": {
+        "total": 2,
+        "open": 0,
+        "closed": 2
+      },
+      "by_harm_level": {
+        "NO_HARM": 2,
+        "LOW_HARM": 0,
+        "MODERATE_HARM": 0,
+        "SEVERE_HARM": 0,
+        "DEATH": 0
+      }
+    },
+    "compliance_score": {
+      "score": 95,
+      "max_score": 100,
+      "percentage": 95.0,
+      "grade": "A"
+    },
+    "alerts": [
+      {
+        "type": "info",
+        "title": "DSPT Renewal Reminder",
+        "message": "DSPT expires in 180 days (2025-11-22)",
+        "action_required": "Schedule DSPT renewal assessment"
+      }
+    ]
+  }
+}

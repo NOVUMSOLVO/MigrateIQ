@@ -38,8 +38,14 @@ urlpatterns = [
     path('api/validation/', include('validation.urls')),
     path('api/ml/', include('ml.urls')),
 
-    # GraphQL endpoint (temporarily disabled due to schema issues)
-    # path('api/', include('graphql_api.urls')),
+    # NHS Compliance endpoints
+    path('api/nhs-compliance/', include('nhs_compliance.urls')),
+
+    # Demo extension endpoints
+    path('', include('demo_extension.urls')),
+
+    # GraphQL endpoint
+    path('api/', include('graphql_api.urls')),
 
     # Internationalization
     path('i18n/', include('django.conf.urls.i18n')),

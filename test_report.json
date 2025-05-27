@@ -1,0 +1,236 @@
+{
+  "timestamp": "2025-05-27T00:29:12.566217",
+  "summary": {
+    "total_tests": 32,
+    "passed_tests": 22,
+    "failed_tests": 10,
+    "success_rate": 68.75,
+    "total_duration": 9.14989709854126
+  },
+  "results": [
+    {
+      "name": "Python Version Check",
+      "passed": true,
+      "message": "Python 3.13.2",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:03.416651"
+    },
+    {
+      "name": "Required File: backend/manage.py",
+      "passed": true,
+      "message": "Found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:03.417128"
+    },
+    {
+      "name": "Required File: backend/requirements.txt",
+      "passed": true,
+      "message": "Found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:03.417560"
+    },
+    {
+      "name": "Required File: frontend/package.json",
+      "passed": true,
+      "message": "Found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:03.417913"
+    },
+    {
+      "name": "Required File: docker-compose.yml",
+      "passed": true,
+      "message": "Found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:03.418252"
+    },
+    {
+      "name": "Required File: .env.sample",
+      "passed": true,
+      "message": "Found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:03.418661"
+    },
+    {
+      "name": "Environment Variable: SECRET_KEY",
+      "passed": false,
+      "message": "Not set",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:03.418846"
+    },
+    {
+      "name": "Environment Variable: DATABASE_URL",
+      "passed": false,
+      "message": "Not set",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:03.418954"
+    },
+    {
+      "name": "Environment Variable: REDIS_URL",
+      "passed": false,
+      "message": "Not set",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:03.419042"
+    },
+    {
+      "name": "Django Database Check",
+      "passed": true,
+      "message": "System check identified no issues (0 silenced).\nINFO Healthcare standards initialized: ['HL7_V2', 'HL7_V3', 'FHIR', 'DICOM', 'SNOMED_CT', 'ICD_10']\nINFO NHS standards initialized: ['NHS_NUMBER', 'CHI_NUMBER', 'H_C_NUMBER']",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:07.859201"
+    },
+    {
+      "name": "Database Migrations Check",
+      "passed": true,
+      "message": "Migrations status checked",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.389268"
+    },
+    {
+      "name": "Docker Availability",
+      "passed": false,
+      "message": "/bin/sh: docker: command not found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.402354"
+    },
+    {
+      "name": "Docker Compose Availability",
+      "passed": false,
+      "message": "/bin/sh: docker-compose: command not found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.412157"
+    },
+    {
+      "name": "Docker Containers Status",
+      "passed": false,
+      "message": "/bin/sh: docker-compose: command not found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.421712"
+    },
+    {
+      "name": "Backend API Health Check",
+      "passed": true,
+      "message": "Service responding (HTTP 200)",
+      "duration": 0.021949052810668945,
+      "timestamp": "2025-05-27T00:29:11.444856"
+    },
+    {
+      "name": "API Documentation Health Check",
+      "passed": true,
+      "message": "Service responding (HTTP 200)",
+      "duration": 0.009923934936523438,
+      "timestamp": "2025-05-27T00:29:11.455324"
+    },
+    {
+      "name": "Auth Endpoint: /api/auth/login/",
+      "passed": true,
+      "message": "HTTP 405",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.463663"
+    },
+    {
+      "name": "Auth Endpoint: /api/auth/logout/",
+      "passed": true,
+      "message": "HTTP 405",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.470978"
+    },
+    {
+      "name": "Auth Endpoint: /api/auth/profile/",
+      "passed": true,
+      "message": "HTTP 200",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.480485"
+    },
+    {
+      "name": "Frontend Application Health Check",
+      "passed": true,
+      "message": "Service responding (HTTP 200)",
+      "duration": 0.0057239532470703125,
+      "timestamp": "2025-05-27T00:29:11.487276"
+    },
+    {
+      "name": "Frontend Dependency: react",
+      "passed": true,
+      "message": "Found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.488659"
+    },
+    {
+      "name": "Frontend Dependency: react-dom",
+      "passed": true,
+      "message": "Found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.488898"
+    },
+    {
+      "name": "Frontend Dependency: @mui/material",
+      "passed": true,
+      "message": "Found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.489019"
+    },
+    {
+      "name": "Frontend Dependency: axios",
+      "passed": true,
+      "message": "Found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.489111"
+    },
+    {
+      "name": "Debug Mode Check",
+      "passed": true,
+      "message": "No debug info in headers",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.499178"
+    },
+    {
+      "name": "CORS Headers",
+      "passed": false,
+      "message": "CORS not found",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.509817"
+    },
+    {
+      "name": "API Response Time",
+      "passed": true,
+      "message": "0.01s (Good)",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:11.517826"
+    },
+    {
+      "name": "CPU Usage",
+      "passed": true,
+      "message": "66.9% (Normal)",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:12.519596"
+    },
+    {
+      "name": "Memory Usage",
+      "passed": true,
+      "message": "71.2% (Normal)",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:12.519859"
+    },
+    {
+      "name": "NHS Endpoint: /api/nhs-compliance/",
+      "passed": false,
+      "message": "HTTP 404",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:12.538850"
+    },
+    {
+      "name": "NHS Endpoint: /api/nhs-compliance/audit/",
+      "passed": false,
+      "message": "HTTP 404",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:12.551752"
+    },
+    {
+      "name": "NHS Endpoint: /api/nhs-compliance/patient-safety/",
+      "passed": false,
+      "message": "HTTP 404",
+      "duration": 0.0,
+      "timestamp": "2025-05-27T00:29:12.565199"
+    }
+  ]
+}
